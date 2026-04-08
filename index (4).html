@@ -1,0 +1,1160 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#075e54">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="WarungPintar">
+<link rel="manifest" href="manifest.json">
+<title>WarungPintar</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+
+<style>
+:root {
+  --wa-teal:     #075e54;
+  --wa-teal2:    #128c7e;
+  --wa-green:    #25d366;
+  --wa-green2:   #dcf8c6;
+  --wa-bg:       #ece5dd;
+  --wa-white:    #ffffff;
+  --wa-gray:     #f0f0f0;
+  --bubble-out:  #dcf8c6;
+  --bubble-in:   #ffffff;
+  --text-dark:   #111b21;
+  --text-mid:    #3b4a54;
+  --text-muted:  #667781;
+  --danger:      #dc2626;
+  --warning:     #d97706;
+  --success:     #16a34a;
+  --radius:      8px;
+}
+
+* { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+
+html, body {
+  height: 100%;
+  overflow: hidden;
+  background: #111;
+  font-family: 'DM Sans', sans-serif;
+}
+
+/* ── PHONE WRAPPER ── */
+.app {
+  max-width: 430px;
+  height: 100dvh;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  background: var(--wa-bg);
+  position: relative;
+  overflow: hidden;
+}
+
+/* ── SPLASH ── */
+#splash {
+  position: absolute;
+  inset: 0;
+  background: var(--wa-teal);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 18px;
+  z-index: 999;
+  transition: opacity .5s ease, transform .5s ease;
+}
+#splash.gone { opacity:0; transform:scale(1.04); pointer-events:none; }
+
+.splash-icon {
+  width: 90px; height: 90px;
+  background: rgba(255,255,255,.15);
+  border-radius: 26px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 44px;
+  box-shadow: 0 0 50px rgba(255,255,255,.1);
+  animation: breathe 2s ease-in-out infinite;
+}
+@keyframes breathe {
+  0%,100%{box-shadow:0 0 30px rgba(37,211,102,.3)}
+  50%{box-shadow:0 0 60px rgba(37,211,102,.6)}
+}
+.splash-name {
+  font-family: 'Sora', sans-serif;
+  font-size: 30px; font-weight: 800;
+  color: #fff; letter-spacing: -.5px;
+}
+.splash-name em { color: var(--wa-green); font-style: normal; }
+.splash-tag { font-size: 13px; color: rgba(255,255,255,.55); }
+.splash-bar {
+  width: 130px; height: 3px;
+  background: rgba(255,255,255,.15);
+  border-radius: 99px; overflow: hidden;
+  margin-top: 12px;
+}
+.splash-fill {
+  height: 100%; width: 0;
+  background: linear-gradient(90deg, var(--wa-green), #4ade80);
+  border-radius: 99px;
+  animation: fill 2s ease forwards;
+}
+@keyframes fill { to { width: 100%; } }
+
+/* ── STATUS BAR ── */
+.sbar {
+  background: var(--wa-teal);
+  padding: 10px 18px 4px;
+  display: flex; justify-content: space-between; align-items: center;
+  flex-shrink: 0;
+}
+.sbar-time {
+  font-family: 'Sora', sans-serif;
+  font-size: 13px; font-weight: 700; color: #fff;
+}
+.sbar-icons { font-size: 12px; color: #fff; display:flex; gap:5px; }
+
+/* ── WA HEADER ── */
+.wa-head {
+  background: var(--wa-teal);
+  padding: 8px 16px 12px;
+  display: flex; align-items: center; gap: 10px;
+  flex-shrink: 0;
+}
+.wa-head-back { color:#fff; font-size:20px; cursor:pointer; padding:4px 8px 4px 0; }
+.wa-avatar {
+  width: 38px; height: 38px;
+  background: linear-gradient(135deg,var(--wa-green),#4ade80);
+  border-radius: 50%;
+  display:flex; align-items:center; justify-content:center;
+  font-size: 20px; flex-shrink: 0;
+}
+.wa-info { flex:1; }
+.wa-name {
+  font-family:'Sora',sans-serif;
+  font-size: 15px; font-weight: 700; color:#fff;
+}
+.wa-status { font-size: 12px; color: rgba(255,255,255,.7); }
+.wa-acts { display:flex; gap:18px; color:#fff; font-size:18px; }
+.wa-acts span { cursor:pointer; }
+
+/* ── SCREENS ── */
+#chat-screen, #dash-screen, #stok-screen, #hutang-screen {
+  display: flex; flex-direction: column; flex: 1; overflow: hidden;
+}
+.hidden { display: none !important; }
+
+/* ── CHAT AREA ── */
+.chat-scroll {
+  flex: 1; overflow-y: auto; padding: 10px 10px 6px;
+  background: var(--wa-bg);
+  background-image: url("data:image/svg+xml,%3Csvg width='52' height='52' viewBox='0 0 52 52' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23c9b99a' fill-opacity='0.18'%3E%3Cpath d='M28 28h4v4h-4v-4zm-12 0h4v4h-4v-4zm24 0h4v4h-4v-4zm-12-12h4v4h-4v-4zm-12 0h4v4h-4v-4zm24 0h4v4h-4v-4z'/%3E%3C/g%3E%3C/svg%3E");
+  display: flex; flex-direction: column; gap: 2px;
+  scroll-behavior: smooth;
+}
+.chat-scroll::-webkit-scrollbar { width: 3px; }
+.chat-scroll::-webkit-scrollbar-thumb { background: rgba(0,0,0,.15); border-radius:99px; }
+
+/* Date chip */
+.date-chip {
+  text-align: center; margin: 8px 0;
+}
+.date-chip span {
+  background: rgba(225,200,170,.85);
+  color: #5a4635; font-size: 11.5px; font-weight: 500;
+  padding: 4px 12px; border-radius: 8px;
+}
+
+/* Message rows */
+.mrow { display:flex; margin-bottom: 1px; animation: msgpop .22s ease; }
+@keyframes msgpop { from{opacity:0;transform:translateY(6px) scale(.97)} to{opacity:1;transform:none} }
+.mrow.out { justify-content: flex-end; }
+.mrow.in  { justify-content: flex-start; }
+
+.bbl {
+  max-width: 82%;
+  padding: 6px 10px 5px;
+  border-radius: 8px;
+  font-size: 14px; line-height: 1.48;
+  position: relative; word-break: break-word;
+}
+.bbl.out { background:var(--bubble-out); border-top-right-radius:2px; color:#111; }
+.bbl.in  { background:var(--bubble-in); border-top-left-radius:2px; color:#111; box-shadow:0 1px 2px rgba(0,0,0,.1); }
+
+.bbl-time {
+  font-size: 10px; color: rgba(0,0,0,.38);
+  text-align: right; margin-top: 3px;
+}
+.bbl.out .bbl-time { color: rgba(0,100,60,.55); }
+.tick { color: var(--wa-teal2); font-size:11px; margin-left:2px; }
+
+/* Card inside bubble */
+.card {
+  background: #fff; border-radius: 10px;
+  overflow: hidden; min-width: 230px;
+  box-shadow: 0 1px 4px rgba(0,0,0,.08); margin: 3px 0;
+}
+.card-head {
+  padding: 9px 14px; color: #fff;
+  font-weight: 700; font-size: 13px;
+  display: flex; align-items: center; gap: 7px;
+}
+.card-head.green  { background: linear-gradient(135deg,#1a6b3a,#128c7e); }
+.card-head.red    { background: linear-gradient(135deg,#dc2626,#b91c1c); }
+.card-head.amber  { background: linear-gradient(135deg,#d97706,#b45309); }
+.card-head.blue   { background: linear-gradient(135deg,#1d4ed8,#1e40af); }
+.card-head.purple { background: linear-gradient(135deg,#7c3aed,#6d28d9); }
+
+.card-body { padding: 10px 14px; }
+.crow {
+  display: flex; justify-content: space-between;
+  font-size: 13px; padding: 4px 0;
+  border-bottom: 1px solid #f0f0f0; color: #333;
+}
+.crow:last-child { border-bottom: none; }
+.crow .lbl { color: #777; }
+.crow .val { font-weight: 600; }
+.crow .val.pos { color: var(--success); }
+.crow .val.neg { color: var(--danger); }
+.crow .val.warn { color: var(--warning); }
+
+.card-foot {
+  background: #f8fdf9; padding: 7px 14px;
+  font-size: 11.5px; color: #5a7a62;
+  border-top: 1px solid #e8f5ec;
+}
+
+.badge {
+  display: inline-block; font-size: 11px; font-weight: 700;
+  padding: 2px 9px; border-radius: 99px; margin-top: 3px;
+}
+.badge.green { background:#dcfce7; color:#15803d; }
+.badge.red   { background:#fee2e2; color:#b91c1c; }
+.badge.amber { background:#fef3c7; color:#92400e; }
+
+/* Typing */
+.typing-row { padding: 3px 10px; }
+.typing-bbl {
+  background: var(--bubble-in); border-radius:8px; border-top-left-radius:2px;
+  padding: 10px 14px; width: fit-content;
+  display: flex; gap: 4px; align-items: center;
+  box-shadow: 0 1px 2px rgba(0,0,0,.1);
+  opacity: 0; transition: opacity .2s;
+}
+.typing-bbl.show { opacity: 1; }
+.dot {
+  width:6px; height:6px; background:#aaa; border-radius:50%;
+  animation: tdot 1.1s ease-in-out infinite;
+}
+.dot:nth-child(2){animation-delay:.18s}
+.dot:nth-child(3){animation-delay:.36s}
+@keyframes tdot{0%,60%,100%{transform:translateY(0);opacity:.4}30%{transform:translateY(-5px);opacity:1}}
+
+/* ── QUICK REPLIES ── */
+.qr-wrap {
+  padding: 6px 10px 0; background: #f0f0f0;
+  display: flex; gap: 6px; overflow-x: auto; scrollbar-width:none;
+  flex-shrink: 0;
+}
+.qr-wrap::-webkit-scrollbar { display:none; }
+.qr {
+  background: #fff; border: 1.5px solid var(--wa-green);
+  color: var(--wa-teal2); font-size: 12px; font-weight: 600;
+  padding: 6px 12px; border-radius: 20px; white-space: nowrap;
+  cursor: pointer; transition: all .15s; flex-shrink:0;
+  font-family: 'DM Sans', sans-serif;
+}
+.qr:active, .qr:hover { background:var(--wa-green); color:#fff; border-color:var(--wa-green); }
+
+/* ── INPUT ── */
+.input-area {
+  background: #f0f0f0; padding: 8px 10px;
+  display: flex; align-items: flex-end; gap: 8px;
+  flex-shrink: 0;
+}
+.input-box {
+  flex:1; background:#fff; border-radius:24px;
+  padding: 10px 16px; display:flex; align-items:center; gap:8px;
+  min-height:44px; box-shadow:0 1px 3px rgba(0,0,0,.08);
+}
+.input-box input {
+  flex:1; border:none; outline:none;
+  font-size:15px; font-family:'DM Sans',sans-serif; color:#333;
+  background:transparent;
+}
+.input-box input::placeholder { color:#aaa; }
+.emoji { font-size:20px; cursor:pointer; opacity:.6; flex-shrink:0; }
+.send-btn {
+  width:44px; height:44px; background:var(--wa-green);
+  border-radius:50%; border:none; cursor:pointer;
+  display:flex; align-items:center; justify-content:center;
+  flex-shrink:0; transition:transform .12s, background .2s;
+  box-shadow: 0 2px 8px rgba(37,211,102,.35);
+}
+.send-btn:active { transform:scale(.9); background:var(--wa-teal2); }
+.send-btn svg { width:20px; height:20px; fill:#fff; }
+
+/* ── WARNING BANNER ── */
+.warn-banner {
+  background: #fffbeb; border-bottom: 1px solid #fcd34d;
+  padding: 8px 14px; font-size: 12px; color: #92400e;
+  display: flex; align-items: flex-start; gap: 8px;
+  animation: slidedown .3s ease;
+  flex-shrink: 0; max-height: 120px; overflow-y:auto;
+}
+@keyframes slidedown{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:none}}
+.warn-banner.hide { display:none; }
+
+/* ── BOTTOM NAV ── */
+.bnav {
+  background: #fff; border-top: 1px solid #e8e8e8;
+  padding: 8px 0 calc(8px + env(safe-area-inset-bottom));
+  display: flex; justify-content: space-around; flex-shrink:0;
+}
+.ni {
+  display:flex; flex-direction:column; align-items:center;
+  gap:3px; cursor:pointer; padding:4px 14px; border-radius:12px;
+  transition: background .15s; position:relative;
+}
+.ni:active { background:#f0faf3; }
+.ni-icon { font-size:20px; }
+.ni-lbl { font-size:10px; color:#aaa; font-weight:500; }
+.ni.on .ni-lbl { color:var(--wa-green); font-weight:700; }
+.ni .badge-dot {
+  position:absolute; top:2px; right:10px;
+  width:8px; height:8px; background:var(--danger);
+  border-radius:50%; border:2px solid #fff;
+  display:none;
+}
+.ni .badge-dot.show { display:block; }
+
+/* ── DASHBOARD ── */
+.dash-head {
+  background: linear-gradient(160deg, var(--wa-teal) 0%, var(--wa-teal2) 100%);
+  padding: 18px 18px 30px; flex-shrink:0; position:relative; overflow:hidden;
+}
+.dash-head::after {
+  content:''; position:absolute; bottom:-18px; left:0; right:0;
+  height:36px; background:#f9f9f9;
+  border-radius: 50% 50% 0 0 / 100% 100% 0 0;
+}
+.dash-greet { font-size:12px; color:rgba(255,255,255,.6); margin-bottom:3px; }
+.dash-nm {
+  font-family:'Sora',sans-serif; font-size:22px; font-weight:800;
+  color:#fff; margin-bottom:18px;
+}
+.dash-nm em { color:#4ade80; font-style:normal; }
+
+.bal-card {
+  background: rgba(255,255,255,.13); backdrop-filter:blur(8px);
+  border:1px solid rgba(255,255,255,.2);
+  border-radius:18px; padding:14px 18px;
+  display:flex; justify-content:space-between; align-items:center;
+}
+.bal-lbl { font-size:11px; color:rgba(255,255,255,.6); margin-bottom:3px; }
+.bal-amt {
+  font-family:'Sora',sans-serif; font-size:22px; font-weight:800; color:#fff;
+}
+.bal-badge {
+  background:rgba(74,222,128,.2); border:1px solid rgba(74,222,128,.4);
+  color:#4ade80; font-size:12px; font-weight:700;
+  padding:6px 12px; border-radius:99px;
+}
+
+.dash-body {
+  flex:1; overflow-y:auto; padding:16px 14px;
+  background:#f9f9f9; display:flex; flex-direction:column; gap:14px;
+}
+.dash-body::-webkit-scrollbar{display:none;}
+
+.sec-title {
+  font-family:'Sora',sans-serif; font-size:13px; font-weight:700;
+  color:#111; margin-bottom:8px;
+}
+
+.stats-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+.sc {
+  background:#fff; border-radius:14px; padding:12px;
+  box-shadow:0 2px 10px rgba(0,0,0,.05);
+}
+.sc-icon { font-size:20px; margin-bottom:6px; }
+.sc-val {
+  font-family:'Sora',sans-serif; font-size:17px; font-weight:800;
+  color:#111; margin-bottom:1px;
+}
+.sc-lbl { font-size:11px; color:#888; font-weight:500; }
+.sc-chg { font-size:11px; font-weight:600; margin-top:3px; }
+.sc-chg.up{color:var(--success)} .sc-chg.dn{color:var(--danger)}
+
+.recent-list { display:flex; flex-direction:column; gap:7px; }
+.ri {
+  background:#fff; border-radius:12px; padding:10px 12px;
+  display:flex; align-items:center; gap:10px;
+  box-shadow:0 1px 6px rgba(0,0,0,.04);
+}
+.ri-icon {
+  width:36px; height:36px; border-radius:10px;
+  display:flex; align-items:center; justify-content:center;
+  font-size:17px; flex-shrink:0;
+}
+.ri-icon.s{background:#dcfce7} .ri-icon.b{background:#fef3c7} .ri-icon.d{background:#fee2e2}
+.ri-name { font-size:13px; font-weight:600; color:#111; margin-bottom:1px; }
+.ri-time { font-size:11px; color:#888; }
+.ri-amt { font-family:'Sora',sans-serif; font-size:13px; font-weight:700; }
+.ri-amt.pos{color:var(--success)} .ri-amt.neg{color:var(--danger)}
+
+.empty-state { text-align:center; color:#bbb; font-size:13px; padding:20px 0; }
+
+/* ── STOK SCREEN ── */
+.screen-head {
+  background: var(--wa-teal);
+  padding: 14px 16px;
+  display: flex; align-items: center; gap: 12px;
+  flex-shrink: 0;
+}
+.screen-title {
+  font-family:'Sora',sans-serif; font-size:17px; font-weight:700; color:#fff;
+}
+.screen-body {
+  flex:1; overflow-y:auto; padding:12px;
+  display:flex; flex-direction:column; gap:8px;
+  background:#f9f9f9;
+}
+.screen-body::-webkit-scrollbar{display:none;}
+
+.stok-item {
+  background:#fff; border-radius:12px; padding:12px 14px;
+  display:flex; justify-content:space-between; align-items:center;
+  box-shadow:0 1px 6px rgba(0,0,0,.05);
+  border-left:4px solid transparent;
+}
+.stok-item.kritis { border-left-color: var(--warning); }
+.stok-item.habis  { border-left-color: var(--danger); }
+.stok-item.aman   { border-left-color: var(--success); }
+.stok-nm { font-size:14px; font-weight:600; color:#111; }
+.stok-sub { font-size:11px; color:#888; margin-top:2px; }
+.stok-qty {
+  font-family:'Sora',sans-serif; font-size:16px; font-weight:800;
+  text-align:right;
+}
+.stok-qty.aman{color:var(--success)} .stok-qty.kritis{color:var(--warning)} .stok-qty.habis{color:var(--danger)}
+.stok-sat { font-size:11px; color:#888; text-align:right; }
+
+/* ── HUTANG SCREEN ── */
+.hutang-item {
+  background:#fff; border-radius:12px; padding:12px 14px;
+  display:flex; justify-content:space-between; align-items:center;
+  box-shadow:0 1px 6px rgba(0,0,0,.05);
+  border-left:4px solid var(--danger);
+}
+.hutang-nm { font-size:14px; font-weight:600; color:#111; }
+.hutang-sub { font-size:11px; color:#888; margin-top:2px; }
+.hutang-amt {
+  font-family:'Sora',sans-serif; font-size:15px; font-weight:800;
+  color:var(--danger); text-align:right;
+}
+.hutang-days { font-size:11px; color:#888; text-align:right; }
+
+/* ── LOADING ── */
+.loading-overlay {
+  position:absolute; inset:0; background:rgba(255,255,255,.7);
+  display:flex; align-items:center; justify-content:center;
+  z-index:50; display:none;
+}
+.spinner {
+  width:32px; height:32px;
+  border:3px solid var(--wa-gray);
+  border-top-color:var(--wa-teal);
+  border-radius:50%;
+  animation:spin .7s linear infinite;
+}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+@media(min-width:431px){
+  body { display:flex; align-items:center; justify-content:center; min-height:100vh; }
+  .app { border-radius:40px; height:90vh; max-height:900px; box-shadow:0 24px 80px rgba(0,0,0,.5); }
+}
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- SPLASH -->
+  <div id="splash">
+    <div class="splash-icon">🏪</div>
+    <div class="splash-name">Warung<em>Pintar</em></div>
+    <div class="splash-tag">Catat otomatis. Laporan instan.</div>
+    <div class="splash-bar"><div class="splash-fill"></div></div>
+  </div>
+
+  <!-- STATUS BAR -->
+  <div class="sbar">
+    <div class="sbar-time" id="clock">09:41</div>
+    <div class="sbar-icons"><span>📶</span><span>🔋</span></div>
+  </div>
+
+  <!-- WA HEADER -->
+  <div class="wa-head">
+    <div class="wa-avatar">🏪</div>
+    <div class="wa-info">
+      <div class="wa-name">WarungPintar AI</div>
+      <div class="wa-status" id="bot-status">online</div>
+    </div>
+    <div class="wa-acts">
+      <span title="Refresh dashboard" onclick="loadDashboard()">🔄</span>
+      <span>⋮</span>
+    </div>
+  </div>
+
+  <!-- WARNING BANNER -->
+  <div class="warn-banner hide" id="warn-banner">
+    <span>⚠️</span>
+    <div id="warn-text"></div>
+  </div>
+
+  <!-- ======= CHAT SCREEN ======= -->
+  <div id="chat-screen">
+
+    <div class="chat-scroll" id="chat">
+      <div class="date-chip"><span id="today-chip">Hari ini</span></div>
+      <div class="mrow in">
+        <div class="bbl in">
+          Halo! 👋 Saya <b>WarungPintar AI</b>.<br><br>
+          Ketik transaksi secara natural, saya akan catat otomatis ke Google Sheets.<br><br>
+          Contoh:<br>
+          • <i>jual 10 renteng kopi 5rb</i><br>
+          • <i>Pak Joko hutang 25rb</i><br>
+          • <i>laporan hari ini</i>
+          <div class="bbl-time" id="greet-time">—</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="typing-row">
+      <div class="typing-bbl" id="typing">
+        <div class="dot"></div><div class="dot"></div><div class="dot"></div>
+      </div>
+    </div>
+
+    <div class="qr-wrap">
+      <button class="qr" onclick="sq('jual 10 renteng kopi 5rb')">☕ Jual kopi</button>
+      <button class="qr" onclick="sq('Pak Joko hutang 25rb')">📋 Hutang</button>
+      <button class="qr" onclick="sq('laporan hari ini')">📊 Laporan</button>
+      <button class="qr" onclick="sq('stok semua')">📦 Cek stok</button>
+      <button class="qr" onclick="sq('Pak Joko bayar 25rb')">✅ Bayar hutang</button>
+      <button class="qr" onclick="sq('beli stok mie 5 dus 50rb')">🛒 Beli stok</button>
+      <button class="qr" onclick="sq('hutang semua')">👥 Semua hutang</button>
+    </div>
+
+    <div class="input-area">
+      <div class="input-box">
+        <span class="emoji">😊</span>
+        <input type="text" id="inp" placeholder="Ketik pesan..." onkeydown="onkey(event)">
+        <span class="emoji">📎</span>
+      </div>
+      <button class="send-btn" onclick="send()">
+        <svg viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- ======= DASHBOARD SCREEN ======= -->
+  <div id="dash-screen" class="hidden">
+    <div class="dash-head">
+      <div class="dash-greet">Selamat datang,</div>
+      <div class="dash-nm">Warung <em>Anda</em> 👋</div>
+      <div class="bal-card">
+        <div>
+          <div class="bal-lbl">Omzet Hari Ini</div>
+          <div class="bal-amt" id="d-omzet">Memuat...</div>
+        </div>
+        <div class="bal-badge" id="d-badge">—</div>
+      </div>
+    </div>
+
+    <div class="dash-body">
+      <div>
+        <div class="sec-title">📊 Ringkasan Hari Ini</div>
+        <div class="stats-grid">
+          <div class="sc">
+            <div class="sc-icon">💰</div>
+            <div class="sc-val" id="d-masuk">—</div>
+            <div class="sc-lbl">Pemasukan</div>
+            <div class="sc-chg up" id="d-trx">— transaksi</div>
+          </div>
+          <div class="sc">
+            <div class="sc-icon">🛒</div>
+            <div class="sc-val" id="d-keluar">—</div>
+            <div class="sc-lbl">Pengeluaran</div>
+            <div class="sc-chg dn" id="d-beli">— pembelian</div>
+          </div>
+          <div class="sc">
+            <div class="sc-icon">📋</div>
+            <div class="sc-val" id="d-hutang">—</div>
+            <div class="sc-lbl">Total Hutang</div>
+            <div class="sc-chg dn" id="d-debitur">— orang</div>
+          </div>
+          <div class="sc">
+            <div class="sc-icon">📈</div>
+            <div class="sc-val" id="d-laba">—</div>
+            <div class="sc-lbl">Laba Bersih</div>
+            <div class="sc-chg up">hari ini</div>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <div class="sec-title">📝 Transaksi Terbaru</div>
+        <div class="recent-list" id="d-recent">
+          <div class="empty-state">Belum ada transaksi.<br>Mulai chat untuk mencatat! 💬</div>
+        </div>
+      </div>
+
+      <div>
+        <div class="sec-title">⚠️ Stok Kritis</div>
+        <div id="d-stok-kritis">
+          <div class="empty-state">✅ Semua stok aman</div>
+        </div>
+      </div>
+
+      <div>
+        <div class="sec-title">📋 Hutang Belum Bayar</div>
+        <div id="d-hutang-list">
+          <div class="empty-state">🎉 Tidak ada hutang</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======= STOK SCREEN ======= -->
+  <div id="stok-screen" class="hidden">
+    <div class="screen-head">
+      <span style="color:#fff;font-size:22px;cursor:pointer" onclick="goChat()">←</span>
+      <div class="screen-title">📦 Semua Stok Barang</div>
+    </div>
+    <div class="screen-body" id="stok-body">
+      <div class="empty-state">Memuat data stok...</div>
+    </div>
+  </div>
+
+  <!-- ======= HUTANG SCREEN ======= -->
+  <div id="hutang-screen" class="hidden">
+    <div class="screen-head">
+      <span style="color:#fff;font-size:22px;cursor:pointer" onclick="goChat()">←</span>
+      <div class="screen-title">📋 Daftar Hutang</div>
+    </div>
+    <div class="screen-body" id="hutang-body">
+      <div class="empty-state">Memuat data hutang...</div>
+    </div>
+  </div>
+
+  <!-- BOTTOM NAV -->
+  <div class="bnav">
+    <div class="ni on" id="n-chat" onclick="goChat()">
+      <div class="ni-icon">💬</div>
+      <div class="ni-lbl">Chat</div>
+    </div>
+    <div class="ni" id="n-dash" onclick="goDash()">
+      <div class="ni-icon">📊</div>
+      <div class="ni-lbl">Dashboard</div>
+      <div class="badge-dot" id="dot-dash"></div>
+    </div>
+    <div class="ni" id="n-stok" onclick="goStok()">
+      <div class="ni-icon">📦</div>
+      <div class="ni-lbl">Stok</div>
+      <div class="badge-dot" id="dot-stok"></div>
+    </div>
+    <div class="ni" id="n-hutang" onclick="goHutang()">
+      <div class="ni-icon">📋</div>
+      <div class="ni-lbl">Hutang</div>
+      <div class="badge-dot" id="dot-hutang"></div>
+    </div>
+  </div>
+
+</div><!-- .app -->
+
+<script>
+// ============================================================
+// CONFIG — Ganti SCRIPT_URL setelah deploy Apps Script
+// ============================================================
+const SCRIPT_URL = 'PASTE_YOUR_APPS_SCRIPT_URL_HERE';
+const TOKO_ID    = 'default';
+
+// ============================================================
+// CLOCK
+// ============================================================
+function tick() {
+  const n = new Date();
+  const t = n.getHours().toString().padStart(2,'0') + ':' + n.getMinutes().toString().padStart(2,'0');
+  document.getElementById('clock').textContent = t;
+}
+tick(); setInterval(tick, 15000);
+
+// Greet time + today chip
+(function(){
+  const n = new Date();
+  document.getElementById('greet-time').textContent =
+    n.getHours().toString().padStart(2,'0') + ':' + n.getMinutes().toString().padStart(2,'0');
+  document.getElementById('today-chip').textContent =
+    n.toLocaleDateString('id-ID', {weekday:'long', day:'numeric', month:'long'});
+})();
+
+// ============================================================
+// SPLASH
+// ============================================================
+setTimeout(() => document.getElementById('splash').classList.add('gone'), 2200);
+
+// ============================================================
+// NAV
+// ============================================================
+function setNav(id) {
+  document.querySelectorAll('.ni').forEach(e => e.classList.remove('on'));
+  document.getElementById(id).classList.add('on');
+}
+function showOnly(id) {
+  ['chat-screen','dash-screen','stok-screen','hutang-screen'].forEach(s => {
+    document.getElementById(s).classList.add('hidden');
+  });
+  document.getElementById(id).classList.remove('hidden');
+}
+
+function goChat()  { showOnly('chat-screen');  setNav('n-chat'); }
+function goDash()  { showOnly('dash-screen');  setNav('n-dash');  loadDashboard(); }
+function goStok()  { showOnly('stok-screen');  setNav('n-stok');  loadStok(); }
+function goHutang(){ showOnly('hutang-screen'); setNav('n-hutang'); loadHutang(); }
+
+// ============================================================
+// WARNINGS
+// ============================================================
+function showWarnings(warnings) {
+  if (!warnings || warnings.length === 0) {
+    document.getElementById('warn-banner').classList.add('hide');
+    document.getElementById('dot-dash').classList.remove('show');
+    return;
+  }
+  document.getElementById('warn-text').innerHTML =
+    warnings.map(w => `<div>${w.message}</div>`).join('');
+  document.getElementById('warn-banner').classList.remove('hide');
+  if (warnings.some(w => w.type === 'STOK_KRITIS' || w.type === 'STOK_HABIS'))
+    document.getElementById('dot-stok').classList.add('show');
+  if (warnings.some(w => w.type === 'HUTANG_LAMA'))
+    document.getElementById('dot-hutang').classList.add('show');
+  document.getElementById('dot-dash').classList.add('show');
+}
+
+// ============================================================
+// CHAT ENGINE
+// ============================================================
+function onkey(e) { if (e.key === 'Enter') send(); }
+function sq(txt)  { document.getElementById('inp').value = txt; send(); }
+
+function send() {
+  const inp  = document.getElementById('inp');
+  const text = inp.value.trim();
+  if (!text) return;
+  inp.value = '';
+  addMsg(text, 'out');
+  callBackend(text);
+}
+
+function addMsg(html, dir) {
+  const chat = document.getElementById('chat');
+  const now  = new Date();
+  const ts   = now.getHours().toString().padStart(2,'0') + ':' + now.getMinutes().toString().padStart(2,'0');
+
+  const row = document.createElement('div');
+  row.className = 'mrow ' + dir;
+  const bbl = document.createElement('div');
+  bbl.className = 'bbl ' + dir;
+  bbl.innerHTML = html + `<div class="bbl-time">${ts}${dir==='out'?' <span class="tick">✓✓</span>':''}</div>`;
+  row.appendChild(bbl);
+  chat.appendChild(row);
+  chat.scrollTop = chat.scrollHeight;
+}
+
+function setTyping(show) {
+  const t = document.getElementById('typing');
+  if (show) { t.classList.add('show'); document.getElementById('bot-status').textContent = 'mengetik...'; }
+  else       { t.classList.remove('show'); document.getElementById('bot-status').textContent = 'online'; }
+}
+
+// ============================================================
+// BACKEND CALL
+// ============================================================
+async function callBackend(message) {
+  setTyping(true);
+
+  // Demo mode jika URL belum dikonfigurasi
+  if (SCRIPT_URL === 'PASTE_YOUR_APPS_SCRIPT_URL_HERE') {
+    await delay(900 + Math.random() * 600);
+    setTyping(false);
+    const reply = demoProcess(message);
+    addMsg(reply.html, 'in');
+    if (reply.warnings) showWarnings(reply.warnings);
+    return;
+  }
+
+  try {
+    const res = await fetch(SCRIPT_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ message, tokoId: TOKO_ID })
+    });
+    const json = await res.json();
+    setTyping(false);
+
+    if (json.success) {
+      // Format reply teks WA ke HTML
+      addMsg(waToHtml(json.reply), 'in');
+      if (json.warnings && json.warnings.length > 0) showWarnings(json.warnings);
+      // Auto-refresh dashboard badge
+      document.getElementById('dot-dash').classList.add('show');
+    } else {
+      addMsg('❌ Terjadi kesalahan: ' + (json.error || 'Unknown'), 'in');
+    }
+  } catch(err) {
+    setTyping(false);
+    addMsg('❌ Gagal terhubung ke server. Cek koneksi internet.', 'in');
+  }
+}
+
+// Convert WA formatting (*bold*, _italic_) to HTML
+function waToHtml(text) {
+  return text
+    .replace(/\*([^*]+)\*/g, '<b>$1</b>')
+    .replace(/_([^_]+)_/g, '<i>$1</i>')
+    .replace(/\n/g, '<br>');
+}
+
+// ============================================================
+// DASHBOARD LOAD
+// ============================================================
+async function loadDashboard() {
+  if (SCRIPT_URL === 'PASTE_YOUR_APPS_SCRIPT_URL_HERE') {
+    renderDashboard(demoDashData());
+    return;
+  }
+  try {
+    const res  = await fetch(`${SCRIPT_URL}?action=dashboard&tokoId=${TOKO_ID}`);
+    const json = await res.json();
+    if (json.success) renderDashboard(json.data);
+  } catch(e) {}
+}
+
+function renderDashboard(d) {
+  const fmt = n => 'Rp ' + (n||0).toLocaleString('id-ID');
+
+  document.getElementById('d-omzet').textContent  = fmt(d.pemasukanHariIni);
+  document.getElementById('d-badge').textContent  = `+${d.jumlahTransaksi} transaksi`;
+  document.getElementById('d-masuk').textContent  = fmt(d.pemasukanHariIni);
+  document.getElementById('d-keluar').textContent = fmt(d.pengeluaranHariIni);
+  document.getElementById('d-hutang').textContent = fmt(d.totalHutang);
+  document.getElementById('d-laba').textContent   = fmt(d.labaHariIni);
+  document.getElementById('d-trx').textContent    = `${d.jumlahTransaksi} transaksi`;
+  document.getElementById('d-debitur').textContent= `${d.jumlahDebitur} orang`;
+
+  // Recent
+  const rEl = document.getElementById('d-recent');
+  if (!d.allHutang || d.jumlahTransaksi === 0) {
+    rEl.innerHTML = '<div class="empty-state">Belum ada transaksi hari ini 💬</div>';
+  } else {
+    rEl.innerHTML = (d.allHutang||[]).map(h => `
+      <div class="ri">
+        <div class="ri-icon d">📋</div>
+        <div style="flex:1">
+          <div class="ri-name">Hutang ${h.nama}</div>
+          <div class="ri-time">${h.barang} • Hari ini</div>
+        </div>
+        <div class="ri-amt neg">Rp ${h.total.toLocaleString('id-ID')}</div>
+      </div>`).join('');
+  }
+
+  // Stok kritis
+  const skEl = document.getElementById('d-stok-kritis');
+  if (!d.stokKritis || d.stokKritis.length === 0) {
+    skEl.innerHTML = '<div class="empty-state">✅ Semua stok aman</div>';
+  } else {
+    skEl.innerHTML = d.stokKritis.map(s => `
+      <div class="ri">
+        <div class="ri-icon b">⚠️</div>
+        <div style="flex:1"><div class="ri-name">${s}</div><div class="ri-time">Perlu restock</div></div>
+        <span class="badge amber">Kritis</span>
+      </div>`).join('');
+  }
+
+  // Hutang list
+  const hlEl = document.getElementById('d-hutang-list');
+  if (!d.allHutang || d.allHutang.length === 0) {
+    hlEl.innerHTML = '<div class="empty-state">🎉 Tidak ada hutang</div>';
+  } else {
+    hlEl.innerHTML = (d.allHutang||[]).map(h => `
+      <div class="ri">
+        <div class="ri-icon d">👤</div>
+        <div style="flex:1">
+          <div class="ri-name">${h.nama}</div>
+          <div class="ri-time">${h.barang}</div>
+        </div>
+        <div class="ri-amt neg">Rp ${h.total.toLocaleString('id-ID')}</div>
+      </div>`).join('');
+  }
+}
+
+// ============================================================
+// STOK LOAD
+// ============================================================
+async function loadStok() {
+  const body = document.getElementById('stok-body');
+  body.innerHTML = '<div class="empty-state">Memuat...</div>';
+
+  if (SCRIPT_URL === 'PASTE_YOUR_APPS_SCRIPT_URL_HERE') {
+    renderStok(demoStokData()); return;
+  }
+  try {
+    const res  = await fetch(`${SCRIPT_URL}?action=stok&tokoId=${TOKO_ID}`);
+    const json = await res.json();
+    if (json.success) renderStok(json.data);
+  } catch(e) { body.innerHTML = '<div class="empty-state">Gagal memuat data</div>'; }
+}
+
+function renderStok(items) {
+  const body = document.getElementById('stok-body');
+  if (!items || items.length === 0) {
+    body.innerHTML = '<div class="empty-state">Belum ada data stok</div>'; return;
+  }
+  body.innerHTML = items.map(s => {
+    const lvl = s.qty === 0 ? 'habis' : s.qty <= s.minStok ? 'kritis' : 'aman';
+    const icon = lvl === 'habis' ? '🔴' : lvl === 'kritis' ? '⚠️' : '✅';
+    return `<div class="stok-item ${lvl}">
+      <div>
+        <div class="stok-nm">${icon} ${s.nama}</div>
+        <div class="stok-sub">Beli Rp ${(s.hargaBeli||0).toLocaleString('id-ID')} • Jual Rp ${(s.hargaJual||0).toLocaleString('id-ID')}</div>
+        <div class="stok-sub">Min stok: ${s.minStok} ${s.satuan}</div>
+      </div>
+      <div>
+        <div class="stok-qty ${lvl}">${s.qty}</div>
+        <div class="stok-sat">${s.satuan}</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ============================================================
+// HUTANG LOAD
+// ============================================================
+async function loadHutang() {
+  const body = document.getElementById('hutang-body');
+  body.innerHTML = '<div class="empty-state">Memuat...</div>';
+
+  if (SCRIPT_URL === 'PASTE_YOUR_APPS_SCRIPT_URL_HERE') {
+    renderHutang(demoHutangData()); return;
+  }
+  try {
+    const res  = await fetch(`${SCRIPT_URL}?action=hutang&tokoId=${TOKO_ID}`);
+    const json = await res.json();
+    if (json.success) renderHutang(json.data);
+  } catch(e) { body.innerHTML = '<div class="empty-state">Gagal memuat data</div>'; }
+}
+
+function renderHutang(items) {
+  const body = document.getElementById('hutang-body');
+  if (!items || items.length === 0) {
+    body.innerHTML = '<div class="empty-state">🎉 Tidak ada hutang pelanggan</div>'; return;
+  }
+  const total = items.reduce((a,b) => a + b.total, 0);
+  body.innerHTML = `
+    <div style="background:#fff;border-radius:12px;padding:12px 14px;margin-bottom:8px;box-shadow:0 1px 6px rgba(0,0,0,.05)">
+      <div style="font-size:12px;color:#888">Total Piutang</div>
+      <div style="font-family:'Sora',sans-serif;font-size:20px;font-weight:800;color:#dc2626">Rp ${total.toLocaleString('id-ID')}</div>
+      <div style="font-size:11px;color:#888">${items.length} pelanggan berhutang</div>
+    </div>` +
+    items.map(h => {
+      const days = h.tanggal ? Math.floor((new Date() - new Date(h.tanggal))/(1000*60*60*24)) : 0;
+      return `<div class="hutang-item">
+        <div>
+          <div class="hutang-nm">👤 ${h.nama}</div>
+          <div class="hutang-sub">${h.barang} • ${days} hari lalu</div>
+        </div>
+        <div>
+          <div class="hutang-amt">Rp ${h.total.toLocaleString('id-ID')}</div>
+          <div class="hutang-days">${days >= 7 ? '⚠️ Sudah lama' : 'Baru'}</div>
+        </div>
+      </div>`;
+    }).join('');
+}
+
+// ============================================================
+// DEMO MODE — runs when SCRIPT_URL not configured
+// ============================================================
+const demoState = {
+  pemasukan: 0, pengeluaran: 0, transaksi: 0,
+  hutang: {}, stok: {
+    'Kopi Sachet': {qty:50,sat:'renteng',min:10,beli:2000,jual:2500},
+    'Mie Instan':  {qty:30,sat:'dus',min:5,beli:2500,jual:3000},
+    'Gula Pasir':  {qty:3,sat:'kg',min:5,beli:14000,jual:15000},
+    'Beras':       {qty:15,sat:'kg',min:10,beli:12000,jual:13000},
+    'Sabun Cuci':  {qty:40,sat:'bungkus',min:8,beli:3000,jual:3500},
+    'Minyak Goreng':{qty:0,sat:'liter',min:5,beli:15000,jual:16000}
+  }
+};
+
+function demoProcess(msg) {
+  const t = msg.toLowerCase();
+  const now = new Date();
+  const ts = now.getHours().toString().padStart(2,'0')+':'+now.getMinutes().toString().padStart(2,'0');
+  let warnings = [];
+
+  // Jual
+  const jual = t.match(/jual\s+(\d+)\s+([a-zA-Z\s]+?)\s+(\d+)\s*r?b?/);
+  if (jual) {
+    const qty=parseInt(jual[1]), item=jual[2].trim(), harga=parseInt(jual[3])*1000, total=qty*harga;
+    demoState.pemasukan+=total; demoState.transaksi++;
+    const key=Object.keys(demoState.stok).find(k=>k.toLowerCase().includes(item));
+    if(key){demoState.stok[key].qty=Math.max(0,demoState.stok[key].qty-qty);}
+    warnings=checkDemoWarnings();
+    return { html: card('green','✅ Penjualan Tercatat',[
+      ['Barang',`${qty} ${item}`,''],
+      ['Harga','Rp '+harga.toLocaleString('id-ID'),''],
+      ['Total','Rp '+total.toLocaleString('id-ID'),'pos'],
+      ['Omzet hari ini','Rp '+demoState.pemasukan.toLocaleString('id-ID'),'pos']
+    ],'📊 Tersimpan di Google Sheets'), warnings };
+  }
+
+  // Beli stok
+  if(t.includes('beli')&&t.includes('stok')){
+    const nums=t.match(/\d+/g)||[1,50];
+    const total=parseInt(nums[nums.length-1]||50)*1000;
+    demoState.pengeluaran+=total; demoState.transaksi++;
+    warnings=checkDemoWarnings();
+    return { html: card('amber','🛒 Beli Stok Tercatat',[
+      ['Total Bayar','Rp '+total.toLocaleString('id-ID'),'neg'],
+      ['Pengeluaran','Rp '+demoState.pengeluaran.toLocaleString('id-ID'),'neg']
+    ],'📦 Stok diperbarui'), warnings };
+  }
+
+  // Catat hutang
+  const hutM = t.match(/([a-zA-Z\s]+?)\s+hutang\s+(\d+)\s*r?b?/);
+  if(hutM&&!t.includes('bayar')&&!t.includes('semua')&&!t.includes('cek')&&!t.includes('lihat')){
+    const nama=hutM[1].trim(), jml=parseInt(hutM[2])*1000;
+    if(!demoState.hutang[nama]) demoState.hutang[nama]=0;
+    demoState.hutang[nama]+=jml;
+    warnings=checkDemoWarnings();
+    return { html: card('red','📋 Hutang Tercatat',[
+      ['Pelanggan',nama,''],
+      ['Hutang baru','Rp '+jml.toLocaleString('id-ID'),'neg'],
+      ['Total hutang '+nama,'Rp '+demoState.hutang[nama].toLocaleString('id-ID'),'neg']
+    ],'⚠️ Ingatkan saat jatuh tempo'), warnings };
+  }
+
+  // Bayar hutang
+  const bayM = t.match(/([a-zA-Z\s]+?)\s+bayar\s+(\d+)\s*r?b?/);
+  if(bayM){
+    const nama=bayM[1].trim(), jml=parseInt(bayM[2])*1000;
+    const sisa=Math.max(0,(demoState.hutang[nama]||0)-jml);
+    if(sisa===0) delete demoState.hutang[nama]; else demoState.hutang[nama]=sisa;
+    demoState.pemasukan+=jml;
+    return { html: card('green','✅ Pembayaran Hutang',[
+      ['Pelanggan',nama,''],
+      ['Dibayar','Rp '+jml.toLocaleString('id-ID'),'pos'],
+      ['Sisa hutang',sisa===0?'🎉 LUNAS':'Rp '+sisa.toLocaleString('id-ID'),sisa===0?'pos':'neg']
+    ],''), warnings: checkDemoWarnings() };
+  }
+
+  // Laporan
+  if(t.includes('laporan')||t.includes('rekap')){
+    const laba=demoState.pemasukan-demoState.pengeluaran;
+    const totalH=Object.values(demoState.hutang).reduce((a,b)=>a+b,0);
+    return { html: card('purple','📊 Laporan Hari Ini',[
+      ['💰 Pemasukan','Rp '+demoState.pemasukan.toLocaleString('id-ID'),'pos'],
+      ['🛒 Pengeluaran','Rp '+demoState.pengeluaran.toLocaleString('id-ID'),'neg'],
+      ['📈 Laba Bersih','Rp '+laba.toLocaleString('id-ID'),laba>=0?'pos':'neg'],
+      ['📋 Total Hutang','Rp '+totalH.toLocaleString('id-ID'),'warn'],
+      ['🔢 Transaksi',demoState.transaksi+' transaksi','']
+    ],'✅ Data real ada di Google Sheets'), warnings: checkDemoWarnings() };
+  }
+
+  // Stok
+  if(t.includes('stok')){
+    const rows=Object.entries(demoState.stok).map(([k,v])=>{
+      const lvl=v.qty===0?'neg':v.qty<=v.min?'warn':'pos';
+      const icon=v.qty===0?'🔴':v.qty<=v.min?'⚠️':'✅';
+      return [icon+' '+k,v.qty+' '+v.sat,lvl];
+    });
+    return { html: card('blue','📦 Semua Stok',rows,'Update real-time setiap transaksi'), warnings: checkDemoWarnings() };
+  }
+
+  // Daftar hutang
+  if(t.includes('hutang')){
+    const debtors=Object.entries(demoState.hutang);
+    if(debtors.length===0) return { html: '🎉 <b>Tidak ada hutang!</b><br>Semua pelanggan sudah lunas.', warnings:[] };
+    const totalH=debtors.reduce((a,[,v])=>a+v,0);
+    const rows=[...debtors.map(([k,v])=>[k,'Rp '+v.toLocaleString('id-ID'),'neg']),
+                ['TOTAL','Rp '+totalH.toLocaleString('id-ID'),'neg']];
+    return { html: card('red','📋 Daftar Hutang',rows,''), warnings: checkDemoWarnings() };
+  }
+
+  // Halo
+  if(t.includes('halo')||t.includes('hai')||t.length<5)
+    return { html: 'Halo! 😊 Mau catat apa? Ketik <b>"bantuan"</b> untuk lihat semua perintah.', warnings: [] };
+
+  return { html: '❓ Saya belum paham. Ketik <b>bantuan</b> untuk lihat contoh perintah ya.', warnings: [] };
+}
+
+function card(color, title, rows, footer) {
+  const rowsHtml = rows.map(([l,v,cls]) =>
+    `<div class="crow"><span class="lbl">${l}</span><span class="val ${cls||''}">${v}</span></div>`
+  ).join('');
+  return `<div class="card">
+    <div class="card-head ${color}">${title}</div>
+    <div class="card-body">${rowsHtml}</div>
+    ${footer ? `<div class="card-foot">${footer}</div>` : ''}
+  </div>`;
+}
+
+function checkDemoWarnings() {
+  const w = [];
+  Object.entries(demoState.stok).forEach(([k,v]) => {
+    if(v.qty===0) w.push({type:'STOK_HABIS',level:'danger',message:`🔴 Stok <b>${k}</b> HABIS!`});
+    else if(v.qty<=v.min) w.push({type:'STOK_KRITIS',level:'warning',message:`⚠️ Stok <b>${k}</b> tinggal ${v.qty} ${v.sat}`});
+  });
+  Object.entries(demoState.hutang).forEach(([k,v]) => {
+    w.push({type:'HUTANG_LAMA',level:'warning',message:`⚠️ <b>${k}</b> punya hutang Rp ${v.toLocaleString('id-ID')}`});
+  });
+  return w;
+}
+
+function demoDashData() {
+  const laba = demoState.pemasukan - demoState.pengeluaran;
+  const allH = Object.entries(demoState.hutang).map(([k,v])=>({nama:k,barang:'Berbagai',total:v,tanggal:new Date()}));
+  const totalH = allH.reduce((a,b)=>a+b.total,0);
+  const stokKritis = Object.entries(demoState.stok).filter(([,v])=>v.qty<=v.min).map(([k])=>k);
+  return {
+    pemasukanHariIni:demoState.pemasukan, pengeluaranHariIni:demoState.pengeluaran,
+    labaHariIni:laba, totalHutang:totalH, jumlahDebitur:allH.length,
+    jumlahTransaksi:demoState.transaksi, stokKritis, allHutang:allH
+  };
+}
+
+function demoStokData() {
+  return Object.entries(demoState.stok).map(([k,v])=>({
+    nama:k, qty:v.qty, satuan:v.sat, minStok:v.min, hargaBeli:v.beli, hargaJual:v.jual
+  }));
+}
+
+function demoHutangData() {
+  return Object.entries(demoState.hutang).map(([k,v])=>({
+    nama:k, barang:'Berbagai', total:v, tanggal:new Date()
+  }));
+}
+
+function delay(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+// ============================================================
+// SERVICE WORKER
+// ============================================================
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('sw.js').catch(()=>{});
+}
+</script>
+</body>
+</html>
